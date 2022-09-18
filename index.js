@@ -11,14 +11,14 @@ const redis = require("redis");
 
 const readXlsxFile = require('read-excel-file/node')
 
-const { 
-  addStockToDb, 
-  getLastDateForFetchedStock,  
-  setLastDateForFetchedStock,
-  getStockInfoFromRedis,
-  addStockToRedis,
-  getStockListFromRedis
-} = require('./utils');
+// const { 
+//   addStockToDb, 
+//   getLastDateForFetchedStock,  
+//   setLastDateForFetchedStock,
+//   getStockInfoFromRedis,
+//   addStockToRedis,
+//   getStockListFromRedis
+// } = require('./utils');
 
 require('better-logging')(console);
 
@@ -429,9 +429,9 @@ const main = async () => {
 }
 
 
-connectToRedis();
+// connectToRedis();
 
-fetchLastStockPriceDataFromApi();
+// fetchLastStockPriceDataFromApi();
 
 // Schedule tasks to be run on the server.
 
