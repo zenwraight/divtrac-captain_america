@@ -1,0 +1,27 @@
+{
+  "name": "hunter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --ignore 'data/*' index.js",
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "better-logging": "^4.7.0",
+    "cheerio": "^1.0.0-rc.12",
+    "date-and-time": "^2.3.1",
+    "dotenv": "^16.0.0",
+    "firebase-admin": "^10.0.2",
+    "node-cron": "^3.0.0",
+    "node-fetch": "^3.2.10",
+    "nodemon": "^2.0.15",
+    "pretty": "^2.0.0",
+    "read-excel-file": "^5.5.0",
+    "redis": "^4.0.6"
+  }
+}
