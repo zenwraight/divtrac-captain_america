@@ -477,6 +477,8 @@ const getStocks = async (db) => {
 
 app.get('/', (req, res) => {
   console.log("Print Hello World!");
+  const now = new Date().toISOString();
+  redisClient.set("now_date", now);
   res.send('Hello World!')
 })
 
