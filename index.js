@@ -476,7 +476,7 @@ const getStocks = async (db) => {
 // });
 
 app.get('/', (req, res) => {
-  console.log()
+  console.log("Print Hello World!");
   res.send('Hello World!')
 })
 
