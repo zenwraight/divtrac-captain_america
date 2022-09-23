@@ -476,13 +476,21 @@ const getStocks = async (db) => {
 // });
 
 app.get('/', (req, res) => {
+  console.log()
   res.send('Hello World!')
 })
 
 app.listen(port, () => {
+  connectToRedis();
+  cron.schedule('* * * * * *', function() {
+    const now = new Date().toISOString();
+    redisClient.set("now_date", now);
+    console.log("Task is running every second");
+  })
   console.log(`Example app listening on port ${port}`)
 })
 
-cron.schedule('* * * * * *', function() {
-  console.log("Task is running every second");
-})
+// cron.schedule('* * * * * *', function() {
+
+//   console.log("Task is running every second");
+// })
