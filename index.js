@@ -1,20 +1,35 @@
-const cron = require('node-cron');
+import cron from 'node-cron';
 
-const express = require('express')
+import express from 'express';
 const app = express()
 const port = 3000
 
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, doc, getDoc } = require('firebase/firestore');
+import {
+  initializeApp
+} from 'firebase/app';
 
-const {
-  Stock
-} = require("./models/stock");
+// const { initializeApp } = require('firebase/app');
 
-require("dotenv").config();
-const redis = require("redis");
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from 'firebase/firestore';
+// const { getFirestore, collection, getDocs, doc, getDoc } = require('firebase/firestore');
 
-const readXlsxFile = require('read-excel-file/node')
+// import {
+//   Stock
+// } from "./models/stock.js";
+
+import * as dotenv from 'dotenv';
+dotenv.config()
+
+// require("dotenv").config();
+
+import redis from "redis";
+
+import readXlsxFile from 'read-excel-file';
+// const readXlsxFile = require('read-excel-file/node')
 
 // const { 
 //   addStockToDb, 
@@ -25,9 +40,8 @@ const readXlsxFile = require('read-excel-file/node')
 //   getStockListFromRedis
 // } = require('./utils');
 
-require('better-logging')(console);
-
-const date = require('date-and-time');
+import date from 'date-and-time';
+// const date = require('date-and-time');
 
 let redisClient;
 
@@ -46,72 +60,72 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
-const getDividendData = async (date, redisClient) => {
-  //console.log("Inside method " + date);
-  var config = {
-    method: 'get',
-    url: 'https://api.nasdaq.com/api/calendar/dividends?date='+date,
-  };
+// const getDividendData = async (date, redisClient) => {
+//   //console.log("Inside method " + date);
+//   var config = {
+//     method: 'get',
+//     url: 'https://api.nasdaq.com/api/calendar/dividends?date='+date,
+//   };
   
-  var requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-  };
+//   var requestOptions = {
+//     method: 'GET',
+//     redirect: 'follow'
+//   };
   
-  await fetch("https://api.nasdaq.com/api/calendar/dividends?date="+date, requestOptions)
-    .then(response => response.text())
-    .then(result => {
-      //console.log(result.data);
-      responseJson = JSON.parse(result);
-      //console.log(responseJson.data);
-      if(responseJson.data === undefined || 
-        responseJson.data === null
-      ) {
-        //console.log("Data is null");
-        return;
-      } else if (
-        responseJson.data.calendar === undefined ||
-        responseJson.data.calendar === null
-      ) {
-        //console.log("Calendar is null");
-        return;
-      } else if(
-        responseJson.data.calendar.rows === undefined ||
-        responseJson.data.calendar.rows === null
-      )  {
-        //console.log("Data rows are null");
-        return;
-      } else {
-        //console.log("Looping over rows");
-        //console.log("Redis client is:- ", redisClient);
-        responseJson.data.calendar.rows.forEach(async (stockRow) => {
-          //console.log("Inside Dividend stock rows");
-          const stock = new Stock(
-            stockRow.symbol,
-            stockRow.symbol,
-            stockRow.companyName,
-            stockRow.dividend_Ex_Date,
-            stockRow.payment_Date,
-            stockRow.record_Date,
-            stockRow.dividend_Rate,
-            stockRow.indicated_Annual_Dividend,
-            stockRow.announcement_Date
-          );
-          //console.log("Redis client is:- ", redisClient);
-          await addStockToRedis(stock, redisClient);
-        });
-      }
-    })
-    .catch(function (error) {
-      console.error(error);
-      //console.log("Let's Retry again after sometime");
-      setTimeout(async function () {
-        //console.log("Retry getting Dividend data");
-        await getDividendData(date, redisClient).then(function () {
-          //console.log("Retry method complete");
-        });
-      }, 1000);
-    });
+//   await fetch("https://api.nasdaq.com/api/calendar/dividends?date="+date, requestOptions)
+//     .then(response => response.text())
+//     .then(result => {
+//       //console.log(result.data);
+//       responseJson = JSON.parse(result);
+//       //console.log(responseJson.data);
+//       if(responseJson.data === undefined || 
+//         responseJson.data === null
+//       ) {
+//         //console.log("Data is null");
+//         return;
+//       } else if (
+//         responseJson.data.calendar === undefined ||
+//         responseJson.data.calendar === null
+//       ) {
+//         //console.log("Calendar is null");
+//         return;
+//       } else if(
+//         responseJson.data.calendar.rows === undefined ||
+//         responseJson.data.calendar.rows === null
+//       )  {
+//         //console.log("Data rows are null");
+//         return;
+//       } else {
+//         //console.log("Looping over rows");
+//         //console.log("Redis client is:- ", redisClient);
+//         responseJson.data.calendar.rows.forEach(async (stockRow) => {
+//           //console.log("Inside Dividend stock rows");
+//           const stock = new Stock(
+//             stockRow.symbol,
+//             stockRow.symbol,
+//             stockRow.companyName,
+//             stockRow.dividend_Ex_Date,
+//             stockRow.payment_Date,
+//             stockRow.record_Date,
+//             stockRow.dividend_Rate,
+//             stockRow.indicated_Annual_Dividend,
+//             stockRow.announcement_Date
+//           );
+//           //console.log("Redis client is:- ", redisClient);
+//           await addStockToRedis(stock, redisClient);
+//         });
+//       }
+//     })
+//     .catch(function (error) {
+//       console.error(error);
+//       //console.log("Let's Retry again after sometime");
+//       setTimeout(async function () {
+//         //console.log("Retry getting Dividend data");
+//         await getDividendData(date, redisClient).then(function () {
+//           //console.log("Retry method complete");
+//         });
+//       }, 1000);
+//     });
 
   // await axios(config)
   // .then(function (response) {
@@ -158,7 +172,7 @@ const getDividendData = async (date, redisClient) => {
   //     });
   //   }, 1000);
   // });
-}
+// }
 
 const addFetchedDatesToSet = async (newDate, redisClient) => {
   let fetchedDates = await redisClient.get("fetched_dates");
@@ -397,62 +411,62 @@ const fetchDividendDataFromApiForEtfs = async () => {
   });
 }
 
-const main = async () => {  
-  let lastFetchedDate = await getLastDateForFetchedStock(redisClient);
+// const main = async () => {  
+//   let lastFetchedDate = await getLastDateForFetchedStock(redisClient);
   
-  if (lastFetchedDate) {
-    const now = new Date();
-    //console.log(date.format(now, 'YYYY-MM-DD'));
+//   if (lastFetchedDate) {
+//     const now = new Date();
+//     //console.log(date.format(now, 'YYYY-MM-DD'));
     
-    // current year
-    let year = now.getFullYear();
-    let newDate = date.parse((year-2)+'-01-01', 'YYYY-MM-DD');
+//     // current year
+//     let year = now.getFullYear();
+//     let newDate = date.parse((year-2)+'-01-01', 'YYYY-MM-DD');
     
-    // We will start our iteration from last Fetched Date to current date 
-    while(date.format(now, 'YYYY-MM-DD') != date.format(newDate, 'YYYY-MM-DD')) {
-      await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-      await addFetchedDatesToSet(newDate, redisClient);
-      newDate = date.addDays(newDate, 1);
-    }
+//     // We will start our iteration from last Fetched Date to current date 
+//     while(date.format(now, 'YYYY-MM-DD') != date.format(newDate, 'YYYY-MM-DD')) {
+//       await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//       await addFetchedDatesToSet(newDate, redisClient);
+//       newDate = date.addDays(newDate, 1);
+//     }
 
-    // Now we will start our iteration from current date till next 365 days in total
-    for(var i=0; i<=150; i++) {
-      await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-      await addFetchedDatesToSet(newDate, redisClient);
-      newDate = date.addDays(newDate, 1);
-    }
-    await setLastDateForFetchedStock(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-  } else {
-    const now = new Date();
-    //console.log(date.format(now, 'YYYY-MM-DD'));
+//     // Now we will start our iteration from current date till next 365 days in total
+//     for(var i=0; i<=150; i++) {
+//       await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//       await addFetchedDatesToSet(newDate, redisClient);
+//       newDate = date.addDays(newDate, 1);
+//     }
+//     await setLastDateForFetchedStock(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//   } else {
+//     const now = new Date();
+//     //console.log(date.format(now, 'YYYY-MM-DD'));
     
-    // current year
-    let year = now.getFullYear();
-    const startDate = date.parse((year-3)+'-01-01', 'YYYY-MM-DD');
+//     // current year
+//     let year = now.getFullYear();
+//     const startDate = date.parse((year-3)+'-01-01', 'YYYY-MM-DD');
     
-    //console.log(date.format(startDate, 'YYYY-MM-DD'));
+//     //console.log(date.format(startDate, 'YYYY-MM-DD'));
     
-    let newDate = startDate;
+//     let newDate = startDate;
     
-    // We will start our iteration from Jan 1st of 3 years back to current date 
-    while(date.format(now, 'YYYY-MM-DD') != date.format(newDate, 'YYYY-MM-DD')) {
-      await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-      await addFetchedDatesToSet(newDate, redisClient);
-      newDate = date.addDays(newDate, 1);
-    }
+//     // We will start our iteration from Jan 1st of 3 years back to current date 
+//     while(date.format(now, 'YYYY-MM-DD') != date.format(newDate, 'YYYY-MM-DD')) {
+//       await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//       await addFetchedDatesToSet(newDate, redisClient);
+//       newDate = date.addDays(newDate, 1);
+//     }
     
-    newDate = now;
-    // Now we will start our iteration from current date till next 365 days in total
-    for(var i=0; i<=150; i++) {
-      await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-      await addFetchedDatesToSet(newDate, redisClient);
-      newDate = date.addDays(newDate, 1);
-    }
-    await setLastDateForFetchedStock(date.format(newDate, 'YYYY-MM-DD'), redisClient);
-  }
+//     newDate = now;
+//     // Now we will start our iteration from current date till next 365 days in total
+//     for(var i=0; i<=150; i++) {
+//       await getDividendData(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//       await addFetchedDatesToSet(newDate, redisClient);
+//       newDate = date.addDays(newDate, 1);
+//     }
+//     await setLastDateForFetchedStock(date.format(newDate, 'YYYY-MM-DD'), redisClient);
+//   }
   
-  //console.log(await getStockListFromRedis(redisClient));
-}
+//   //console.log(await getStockListFromRedis(redisClient));
+// }
 
 const getStocks = async (db) => {
   const docRef = doc(db, "Stocks", "AAPL");
@@ -516,7 +530,7 @@ app.listen(port, () => {
 
 
 // Export the Express API
-module.exports = app;
+// module.exports = app;
 
 // cron.schedule('* * * * * *', function() {
 
