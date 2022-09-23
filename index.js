@@ -336,6 +336,11 @@ const fetchLastStockPriceDataFromApi = async () => {
   });
 }
 
+const fetchLastStockPriceDataForIndividualStock = async (stockSymbol) => {
+  await getLastStockPrice(stockSymbol);
+  console.log("COMPLETED Stock fetch");
+}
+
 const fetchDividendDataFromApiForStocks = async () => {
    
   // Stocks API - https://api.nasdaq.com/api/quote/AAPL/dividends?assetclass=stocks
@@ -484,12 +489,27 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/getDividendData', (req, res) => {
+  console.log("STARTING to fetch latest dividend data for stocks and etfs");
+  fetchDividendDataFromApiForStocks();
+  fetchDividendDataFromApiForEtfs();
+  console.log("Dividend data for stocks and etfs COMPLETE");
+  res.send('Dividend Data fetching complete');
+});
+
+app.get('/getLatestStockPrice', (req, res) => {
+  console.log("STARTING to fetch latest stock prices");
+  fetchLastStockPriceDataFromApi();
+  console.log("Latest Stock price fetching COMPLETE");
+  res.send('Successfully fetched latest Stock price');
+});
+
+app.get('/test', (req, res) => {
+  fetchLastStockPriceDataForIndividualStock();
+  res.send("DONE fetching latest individual stock price");
+})
+
 app.listen(port, () => {
-  cron.schedule('* * * * * *', function() {
-    const now = new Date().toISOString();
-    redisClient.set("now_date", now);
-    console.log("Task is running every second");
-  })
   console.log(`Example app listening on port ${port}`)
 })
 
