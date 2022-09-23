@@ -1,29 +1,31 @@
-import express from 'express';
+// import express from 'express';
+const express = require("express");
 const app = express()
 const port = 3000
 
-import {
-  initializeApp
-} from 'firebase/app';
+// import {
+//   initializeApp
+// } from 'firebase/app';
 
-// const { initializeApp } = require('firebase/app');
+const { initializeApp } = require('firebase/app');
 
-import {
-  getFirestore,
-  doc,
-  getDoc
-} from 'firebase/firestore';
-// const { getFirestore, collection, getDocs, doc, getDoc } = require('firebase/firestore');
+// import {
+//   getFirestore,
+//   doc,
+//   getDoc
+// } from 'firebase/firestore';
+const { getFirestore, collection, getDocs, doc, getDoc } = require('firebase/firestore');
 
-import * as dotenv from 'dotenv';
-dotenv.config()
+// import * as dotenv from 'dotenv';
+// dotenv.config()
 
-// require("dotenv").config();
+require("dotenv").config();
 
-import redis from "redis";
+// import redis from "redis";
+const redis = require("redis");
 
-import readXlsxFile from 'read-excel-file';
-// const readXlsxFile = require('read-excel-file/node')
+// import readXlsxFile from 'read-excel-file';
+const readXlsxFile = require('read-excel-file/node')
 
 // const { 
 //   addStockToDb, 
@@ -34,8 +36,7 @@ import readXlsxFile from 'read-excel-file';
 //   getStockListFromRedis
 // } = require('./utils');
 
-import date from 'date-and-time';
-// const date = require('date-and-time');
+// import date from 'date-and-time';
 
 let redisClient;
 
@@ -353,5 +354,5 @@ app.listen(port, () => {
 
 
 // Export the Express API
-// module.exports = app;
-export default app;
+module.exports = app;
+// export default app;
