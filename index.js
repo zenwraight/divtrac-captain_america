@@ -337,6 +337,7 @@ const fetchLastStockPriceDataFromApi = async () => {
 }
 
 const fetchLastStockPriceDataForIndividualStock = async (stockSymbol) => {
+  console.log("STARTED stock price fetch");
   await getLastStockPrice(stockSymbol);
   console.log("COMPLETED Stock fetch");
 }
