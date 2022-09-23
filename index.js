@@ -475,6 +475,8 @@ const getStocks = async (db) => {
 //   console.log('running task every 45 minutes');
 // });
 
+connectToRedis();
+
 app.get('/', (req, res) => {
   console.log("Print Hello World!");
   const now = new Date().toISOString();
@@ -483,7 +485,6 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  connectToRedis();
   cron.schedule('* * * * * *', function() {
     const now = new Date().toISOString();
     redisClient.set("now_date", now);
