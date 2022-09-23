@@ -505,7 +505,7 @@ app.get('/getLatestStockPrice', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  fetchLastStockPriceDataForIndividualStock();
+  fetchLastStockPriceDataForIndividualStock("AAPL");
   res.send("DONE fetching latest individual stock price");
 })
 
