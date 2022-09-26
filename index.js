@@ -1,5 +1,7 @@
+const https = require('https');
 // import express from 'express';
 const express = require("express");
+const cors = require('cors');
 const app = express()
 const port = 3000
 
@@ -92,6 +94,51 @@ const connectToRedis = async() => {
   await redisClient.connect();
 }
 
+app.use(
+  cors({
+    origin: [`http://localhost:${port}`, `https://localhost:${port}`],
+    credentials: 'true',
+  })
+);
+
+const getLastStockPriceUsingHttps = async (stockSymbol) => {
+  console.log("Fetch stock price for " + stockSymbol);
+
+  const url = "https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks";
+    
+  const axios = require('axios');
+
+  // axios.default.withCredentials = true
+
+  // var config = {
+  //   method: 'get',
+  //   withCredentials: true,
+  //   url: 'https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks',
+  //   headers: {
+  //     'Access-Control-Allow-Origin': '*', 
+  //     'Content-Type': 'application/json'
+  //   }
+  // };
+  
+  // await axios(config)
+  // .then(function (response) {
+  //   console.log(JSON.stringify(response.data));
+  // })
+  // .catch(function (error) {
+  //   console.log(error);
+  // });
+  await axios.get(url, { 
+    withCredentials: true,
+    headers: {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}
+  })
+    .then(function (response) {
+    console.log(JSON.stringify(response.data));
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+}
+
 
 // This is to fetch current price of stock delayed by every 30 minutes
 const getLastStockPrice = async (stockSymbol) => {
@@ -104,7 +151,7 @@ const getLastStockPrice = async (stockSymbol) => {
     redirect: 'follow'
   };
 
-  await fetch(url, requestOptions)
+  await fetch(url)
     .then(response => response.text())
     .then(result => {
       const resultJson = JSON.parse(result);
@@ -234,6 +281,7 @@ const fetchLastStockPriceDataFromApi = async () => {
 const fetchLastStockPriceDataForIndividualStock = async (stockSymbol) => {
   console.log("STARTED stock price fetch");
   await getLastStockPrice(stockSymbol);
+  // await getLastStockPriceUsingHttps(stockSymbol);
   console.log("COMPLETED Stock fetch");
 }
 
@@ -344,6 +392,9 @@ app.get('/getLatestStockPrice', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
+
+  // const cookieHeader = req.headers;
+  // console.log(cookieHeader);
   fetchLastStockPriceDataForIndividualStock("AAPL");
   res.send("DONE fetching latest individual stock price");
 })
