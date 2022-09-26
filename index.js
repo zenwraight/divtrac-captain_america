@@ -148,10 +148,14 @@ const getLastStockPrice = async (stockSymbol) => {
 
   var requestOptions = {
     method: 'GET',
-    redirect: 'follow'
+    redirect: 'follow',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    mode: 'cors'
   };
 
-  await fetch(url)
+  await fetch(url, requestOptions)
     .then(response => response.text())
     .then(result => {
       const resultJson = JSON.parse(result);
@@ -163,6 +167,8 @@ const getLastStockPrice = async (stockSymbol) => {
           percentageChange: resultJson.data.primaryData.percentageChange,
           deltaIndicator: resultJson.data.primaryData.deltaIndicator,
         };
+
+        console.log(stockLastPriceInfo);
 
         redisClient.set(stockSymbol+"_info", JSON.stringify(stockLastPriceInfo));
       }
