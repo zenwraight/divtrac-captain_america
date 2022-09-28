@@ -14,15 +14,19 @@
     "@firebase/firestore": "^3.5.0",
     "axios": "^0.27.2",
     "better-logging": "^4.7.0",
+    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "date-and-time": "^2.3.1",
     "dotenv": "^16.0.0",
     "express": "^4.18.1",
     "firebase": "^9.10.0",
+    "firebase-admin": "^11.0.1",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.15",
+    "puppeteer": "^18.0.5",
     "read-excel-file": "^5.5.0",
-    "redis": "^4.0.6"
+    "redis": "^4.0.6",
+    "yahoo-finance2": "^2.3.6"
   },
   "engines": {
     "node": ">=17"
