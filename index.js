@@ -90,7 +90,7 @@ const getLastStockPrice = async (stockSymbol) => {
       priceChangePercent: result.price.regularMarketChangePercent
     }
     console.log(stockPriceOverview);
-    redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
+    await redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
   } catch (err) {
     console.log(err);
   }
