@@ -1,5 +1,4 @@
 const https = require('https');
-// import express from 'express';
 const express = require("express");
 const cors = require('cors');
 const app = express()
@@ -9,36 +8,15 @@ const yahooFinance = require("yahoo-finance2").default;
 
 const { initializeApp } = require('firebase/app');
 
-// import {
-//   getFirestore,
-//   doc,
-//   getDoc
-// } from 'firebase/firestore';
 const { getFirestore, collection, getDocs, doc, getDoc } = require('firebase/firestore');
-
-// import * as dotenv from 'dotenv';
-// dotenv.config()
 
 require("dotenv").config();
 
-// import redis from "redis";
 const redis = require("redis");
 
 const date = require('date-and-time');
 
-// import readXlsxFile from 'read-excel-file';
 const readXlsxFile = require('read-excel-file/node')
-
-// const { 
-//   addStockToDb, 
-//   getLastDateForFetchedStock,  
-//   setLastDateForFetchedStock,
-//   getStockInfoFromRedis,
-//   addStockToRedis,
-//   getStockListFromRedis
-// } = require('./utils');
-
-// import date from 'date-and-time';
 
 let redisClient;
 
@@ -64,17 +42,6 @@ const serviceAccount = require("./serviceAccountKey.json");
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount)
 });
-
-const addFetchedDatesToSet = async (newDate, redisClient) => {
-  let fetchedDates = await redisClient.get("fetched_dates");
-  fetchedDates = JSON.parse(fetchedDates);
-  //console.log("Fetched Dates:- " + fetchedDates);
-  let fetchedDatesSet = new Set(fetchedDates);
-  //console.log("Fetched Dates Old Set:- " + JSON.stringify(fetchedDatesSet));
-  fetchedDatesSet.add(newDate);
-  //console.log("Fetched Dates New Set:- " + JSON.stringify(fetchedDatesSet));
-  redisClient.set("fetched_dates", JSON.stringify(Array.from(fetchedDatesSet)));
-}
 
 const connectToRedis = async() => {
   redisClient = redis.createClient({
@@ -109,74 +76,17 @@ app.use(
   })
 );
 
-const getLastStockPriceUsingHttps = async (stockSymbol) => {
-  console.log("Fetch stock price for " + stockSymbol);
-
-  const url = "https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks";
-    
-  const axios = require('axios');
-
-  // axios.default.withCredentials = true
-
-  // var config = {
-  //   method: 'get',
-  //   withCredentials: true,
-  //   url: 'https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks',
-  //   headers: {
-  //     'Access-Control-Allow-Origin': '*', 
-  //     'Content-Type': 'application/json'
-  //   }
-  // };
-  
-  // await axios(config)
-  // .then(function (response) {
-  //   console.log(JSON.stringify(response.data));
-  // })
-  // .catch(function (error) {
-  //   console.log(error);
-  // });
-  await axios.get(url, { 
-    withCredentials: true,
-    headers: {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}
-  })
-    .then(function (response) {
-    console.log(JSON.stringify(response.data));
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
-}
-
-const getLastStockPriceWebScraped = async (stockSymbol) => {
-  // const browser = await puppeteer.launch({})
-  // const page = await browser.newPage()
-  // const url = "https://api.nasdaq.com/api/quote/"+stockSymbol+"/info?assetclass=stocks";
-  // await page.goto(url)
-  // var element = await page.waitForSelector("body > pre")
-  // var text = await page.evaluate(element => element.textContent, element)
-  // console.log(text)
-  // browser.close()
-
-  console.log("Inside web scraping method");
-
-  const browser = await puppeteer.launch({})
-  const page = await browser.newPage()
-
-  console.log("Page is:- ", page);
-
-  await page.goto('https://www.thesaurus.com/browse/smart')
-  var element = await page.waitForSelector("#meanings > div.css-ixatld.e15rdun50 > ul > li:nth-child(1) > a")
-  var text = await page.evaluate(element => element.textContent, element)
-  console.log(text)
-  browser.close()
-}
-
 
 // This is to fetch current price of stock delayed by every 30 minutes
 const getLastStockPrice = async (stockSymbol) => {
   const result = await yahooFinance.quoteSummary(stockSymbol, { modules: [ "price" ] });
 
-  console.log(result);
+  const stockPriceOverview = {
+    price: result.price.regularMarketPrice,
+    priceChange: result.price.regularMarketChange,
+    priceChangePercent: result.price.regularMarketChangePercent
+  }
+  redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
 }
 
 const getDividendMonthsFromLastYear = (dividends) => {
@@ -318,7 +228,7 @@ const saveDividendDataToFirestore = async() => {
   
         const db = firebaseAdmin.firestore();
   
-        const stockDb = db.collection('stocks-and-etfs');
+        const stockDb = db.collection('stocks');
         const symbolDoc = stockDb.doc(symbol);
   
         await symbolDoc.set({dividendDbData});
@@ -326,11 +236,37 @@ const saveDividendDataToFirestore = async() => {
     }
   });
 
-  // readXlsxFile('ETF.xlsx').then(async (rows) => {
-  //   for(let i=1; i<rows.length-1; i++) {
-  //     let symbol = rows[i][0];
-  //   }
-  // });
+  readXlsxFile('ETF.xlsx').then(async (rows) => {
+    for(let i=1; i<rows.length-1; i++) {
+      let symbol = rows[i][0];
+      let dividendData = await redisClient.get(symbol+"_dividend_data");
+      let dividendOverview = await redisClient.get(symbol+"_dividend_overview");
+      let dividendMonthForecast = await redisClient.get(symbol+"_dividend_month_forecast");
+
+      let dividendDataJson = JSON.parse(dividendData);
+      let dividendOverviewJson = JSON.parse(dividendOverview);
+      let dividendMonthForecastJson = JSON.parse(dividendMonthForecast);
+
+      if (dividendOverviewJson != null) {
+        const dividendDbData = {
+          symbol: dividendOverviewJson.symbol,
+          dividendExDate: dividendOverviewJson.dividendExDate,
+          dividendYield: dividendOverviewJson.dividendYield,
+          annualDividend: dividendOverviewJson.annualDividend,
+          peRatio: dividendOverviewJson.peRatio,
+          lastYearDividendMonths: dividendMonthForecastJson,
+          dividendHistory: dividendDataJson
+        };
+  
+        const db = firebaseAdmin.firestore();
+  
+        const stockDb = db.collection('etfs');
+        const symbolDoc = stockDb.doc(symbol);
+  
+        await symbolDoc.set({dividendDbData});
+      }
+    }
+  });
 }
 
 const saveToFirestore = async() => {
@@ -479,6 +415,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+// This api we will currently hit manually every week once
 app.get('/getDividendData', (req, res) => {
   console.log("STARTING to fetch latest dividend data for stocks and etfs");
   fetchDividendDataFromApiForStocks();
@@ -486,6 +423,7 @@ app.get('/getDividendData', (req, res) => {
   console.log("Dividend data for stocks and etfs COMPLETE");
   res.send('Dividend Data fetching complete');
 });
+
 
 app.get('/getLatestStockPrice', (req, res) => {
   console.log("STARTING to fetch latest stock prices");
@@ -503,6 +441,14 @@ app.get('/test/scrape', async (req, res) => {
   await getLastStockPriceWebScraped("AAPL");
   res.send("Done scraping the stock price");
 })
+
+// This API we will hit every week once using cron job org
+app.get('/saveDataToFirestore', async (req, res) => {
+  console.log("STARTED storing data into Firestore");
+  await saveDividendDataToFirestore();
+  console.log("COMPLETED storing data into Firestore");
+  res.send("Data saved to Firestore");
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
