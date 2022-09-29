@@ -80,14 +80,20 @@ app.use(
 // This is to fetch current price of stock delayed by every 30 minutes
 const getLastStockPrice = async (stockSymbol) => {
   console.log("Fetching last stock price for:- " + stockSymbol);
-  const result = await yahooFinance.quoteSummary(stockSymbol, { modules: [ "price" ] });
 
-  const stockPriceOverview = {
-    price: result.price.regularMarketPrice,
-    priceChange: result.price.regularMarketChange,
-    priceChangePercent: result.price.regularMarketChangePercent
+  try {
+    const result = await yahooFinance.quoteSummary(stockSymbol, { modules: [ "price" ] });
+
+    const stockPriceOverview = {
+      price: result.price.regularMarketPrice,
+      priceChange: result.price.regularMarketChange,
+      priceChangePercent: result.price.regularMarketChangePercent
+    }
+    redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
+  } catch (err) {
+    console.log(err);
   }
-  redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
+
 }
 
 const getDividendMonthsFromLastYear = (dividends) => {
