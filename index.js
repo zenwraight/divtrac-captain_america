@@ -77,7 +77,7 @@ app.use(
 );
 
 
-// This is to fetch current price of stock delayed by every 30 minutes
+// This is to fetch current price of stock delayed by every 60 minutes
 const getLastStockPrice = async (stockSymbol) => {
   console.log("Fetching last stock price for:- " + stockSymbol);
 
@@ -89,6 +89,7 @@ const getLastStockPrice = async (stockSymbol) => {
       priceChange: result.price.regularMarketChange,
       priceChangePercent: result.price.regularMarketChangePercent
     }
+    console.log(stockPriceOverview);
     redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
   } catch (err) {
     console.log(err);
