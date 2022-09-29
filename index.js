@@ -416,6 +416,10 @@ const getStocks = async (db) => {
 
 connectToRedis();
 
+const testMethod = () => {
+  console.log("Hello World! called");
+}
+
 app.get('/', (req, res) => {
   console.log("Print Hello World!");
   const now = new Date().toISOString();
@@ -464,7 +468,8 @@ const server = app.listen(port, () => {
 
 process.on('SIGTERM', () => {
   server.close(() => {
-    console.log('SIGNAL TERMINATED RECEIVED')
+    console.log('SIGNAL TERMINATED RECEIVED');
+    testMethod();
   })
 })
 
