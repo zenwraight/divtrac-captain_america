@@ -462,6 +462,12 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
+process.on('SIGTERM', () => {
+  server.close(() => {
+    console.log('SIGNAL TERMINATED RECEIVED')
+  })
+})
+
 // Export the Express API
 module.exports = app;
 // export default app;
