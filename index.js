@@ -426,9 +426,9 @@ app.get('/getDividendData', (req, res) => {
 });
 
 
-app.get('/getLatestStockPrice', (req, res) => {
+app.get('/getLatestStockPrice', async (req, res) => {
   console.log("STARTING to fetch latest stock prices");
-  fetchLastStockPriceDataFromApi();
+  await fetchLastStockPriceDataFromApi();
   console.log("Latest Stock price fetching COMPLETE");
   res.send('Successfully fetched latest Stock price');
 });
