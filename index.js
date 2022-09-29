@@ -79,6 +79,7 @@ app.use(
 
 // This is to fetch current price of stock delayed by every 30 minutes
 const getLastStockPrice = async (stockSymbol) => {
+  console.log("Fetching last stock price for:- " + stockSymbol);
   const result = await yahooFinance.quoteSummary(stockSymbol, { modules: [ "price" ] });
 
   const stockPriceOverview = {
@@ -432,15 +433,15 @@ app.get('/getLatestStockPrice', (req, res) => {
   res.send('Successfully fetched latest Stock price');
 });
 
-app.get('/test', async (req, res) => {
-  await saveDividendDataToFirestore();
-  res.send("DONE fetching latest individual stock price");
-});
+// app.get('/test', async (req, res) => {
+//   await saveDividendDataToFirestore();
+//   res.send("DONE fetching latest individual stock price");
+// });
 
-app.get('/test/scrape', async (req, res) => {
-  await getLastStockPriceWebScraped("AAPL");
-  res.send("Done scraping the stock price");
-})
+// app.get('/test/scrape', async (req, res) => {
+//   await getLastStockPriceWebScraped("AAPL");
+//   res.send("Done scraping the stock price");
+// })
 
 // This API we will hit every week once using cron job org
 app.get('/saveDataToFirestore', async (req, res) => {
@@ -453,7 +454,6 @@ app.get('/saveDataToFirestore', async (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
-
 
 // Export the Express API
 module.exports = app;
