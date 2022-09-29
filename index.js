@@ -458,7 +458,7 @@ app.get('/saveDataToFirestore', async (req, res) => {
   res.send("Data saved to Firestore");
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
