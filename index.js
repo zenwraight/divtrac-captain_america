@@ -76,6 +76,12 @@ app.use(
   })
 );
 
+// This hashmap is to store which all stocks last price has been fetched
+let fetchedLastStockPrice;
+
+const fetchLastStockPriceQueue = async () => {
+
+}
 
 // This is to fetch current price of stock delayed by every 60 minutes
 const getLastStockPrice = async (stockSymbol) => {
@@ -91,10 +97,11 @@ const getLastStockPrice = async (stockSymbol) => {
     }
     console.log(stockPriceOverview);
     await redisClient.set(stockSymbol+"_last_price", JSON.stringify(stockPriceOverview));
+    fetchedLastStockPrice.add(stockSymbol);
   } catch (err) {
+    fetchedLastStockPrice.add(stockSymbol);
     console.log(err);
   }
-
 }
 
 const getDividendMonthsFromLastYear = (dividends) => {
@@ -313,14 +320,18 @@ const fetchLastStockPriceDataFromApi = async () => {
   readXlsxFile('Stock.xlsx').then(async (rows) => {
     for(let i=1; i<rows.length-1; i++) {
       let symbol = rows[i][0];
-      await getLastStockPrice(symbol);
+      if (!fetchedLastStockPrice.has(symbol)) {
+        await getLastStockPrice(symbol);
+      }
     }
   });
 
   readXlsxFile('ETF.xlsx').then(async (rows) => {
     for(let i=1; i<rows.length-1; i++) {
       let symbol = rows[i][0];
-      await getLastStockPrice(symbol);
+      if (!fetchedLastStockPrice.has(symbol)) {
+        await getLastStockPrice(symbol);
+      }
     }
   });
 }
@@ -418,6 +429,7 @@ connectToRedis();
 
 const testMethod = () => {
   console.log("Hello World! called");
+  console.log("Set is:- " + fetchedLastStockPrice);
 }
 
 app.get('/', (req, res) => {
@@ -439,6 +451,7 @@ app.get('/getDividendData', (req, res) => {
 
 app.get('/getLatestStockPrice', async (req, res) => {
   console.log("STARTING to fetch latest stock prices");
+  fetchedLastStockPrice = new Set();
   await fetchLastStockPriceDataFromApi();
   console.log("Latest Stock price fetching COMPLETE");
   res.send('Successfully fetched latest Stock price');
