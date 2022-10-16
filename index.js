@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require('cors');
 const app = express()
 const port = 3000
+const axios = require('axios');
 
 const yahooFinance = require("yahoo-finance2").default;
 
@@ -148,8 +149,23 @@ const getDividendDataForStocks = async (stockSymbol) => {
         'accept-language': 'en-US,en;q=0.9',
     }
   };
-  
-  await fetch(url, requestOptions)
+
+  var config = {
+    method: 'get',
+    url: 'https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks',
+    headers: {
+        'authority': 'api.nasdaq.com',
+        'accept': 'application/json, text/plain, */*',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+        'origin': 'https://www.nasdaq.com',
+        'sec-fetch-site': 'same-site',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'referer': 'https://www.nasdaq.com/',
+        'accept-language': 'en-US,en;q=0.9',
+    }
+  };
+  await axios(config)
     .then(response => response.text())
     .then(result => {
       const resultJson = JSON.parse(result);
