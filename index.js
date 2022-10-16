@@ -135,7 +135,18 @@ const getDividendDataForStocks = async (stockSymbol) => {
 
   var requestOptions = {
     method: 'GET',
-    redirect: 'follow'
+    redirect: 'follow',
+    headers: {
+        'authority': 'api.nasdaq.com',
+        'accept': 'application/json, text/plain, */*',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+        'origin': 'https://www.nasdaq.com',
+        'sec-fetch-site': 'same-site',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'referer': 'https://www.nasdaq.com/',
+        'accept-language': 'en-US,en;q=0.9',
+    }
   };
   
   await fetch(url, requestOptions)
@@ -457,10 +468,10 @@ app.get('/getLatestStockPrice', async (req, res) => {
   res.send('Successfully fetched latest Stock price');
 });
 
-// app.get('/test', async (req, res) => {
-//   await saveDividendDataToFirestore();
-//   res.send("DONE fetching latest individual stock price");
-// });
+app.get('/test', async (req, res) => {
+  await getDividendDataForStocks("AAPL");
+  res.send("DONE fetching latest individual stock price");
+});
 
 // app.get('/test/scrape', async (req, res) => {
 //   await getLastStockPriceWebScraped("AAPL");
