@@ -100,45 +100,37 @@ const getDividendHistory = async (stockSymbol) => {
 const baseUrl = 'https://finance.yahoo.com/quote/';
 
 const getHistoricalPrices = function (
-  startMonth,
-  startDay,
-  startYear,
-  endMonth,
-  endDay,
-  endYear,
-  ticker,
-  frequency,
-  callback,
+  ticker
 ) {
+  const now = new Date();
+  let startMonth = 1;
+  let startDay = 1;
+  let startYear = 2000;
+  let endMonth = 12;
+  let endYear = now.getFullYear();
+  let endDay = now.getDay();
   const startDate = Math.floor(Date.UTC(startYear, startMonth, startDay, 0, 0, 0) / 1000);
   const endDate = Math.floor(Date.UTC(endYear, endMonth, endDay, 0, 0, 0) / 1000);
 
   const promise = new Promise((resolve, reject) => {
-      request(`${baseUrl + ticker}/history?period1=${startDate}&period2=${endDate}&interval=${frequency}&filter=history&frequency=${frequency}`, (err, res, body) => {
+      request(`${baseUrl + ticker}/history?period1=${startDate}&period2=${endDate}&filter=div`, (err, res, body) => {
           if (err) {
               reject(err);
               return;
           }
 
           try {
-              const prices = JSON.parse(body.split('HistoricalPriceStore\":{\"prices\":')[1].split(',"isPending')[0]);
-
-              resolve(prices);
+              //const prices = JSON.parse(body.split('HistoricalPriceStore\":{\"prices\":')[1].split(',"isPending')[0]);
+              const dividends = JSON.parse(body.split('eventsData\":')[1].split('},\"MobileHeaderStore\":{')[0]);
+              resolve(dividends);
           } catch (err) {
-              reject(err);
+              resolve([]);
+              //reject(err);
           }
       });
   });
 
-  // If a callback function was supplied return the result to the callback.
-  // Otherwise return a promise.
-  if (typeof callback === 'function') {
-      promise
-          .then((price) => callback(null, price))
-          .catch((err) => callback(err));
-  } else {
-      return promise;
-  }
+  return promise;
 };
 
 // This is to fetch current price of stock delayed by every 60 minutes
@@ -543,18 +535,13 @@ app.get('/getLatestStockPrice', async (req, res) => {
 });
 
 app.get('/test', async (req, res) => {
-  getHistoricalPrices(
-    1,
-    1,
-    2010,
-    11,
-    30,
-    2022,
-    "AAPL",
-    "1d"
-  ).then((res) => {
-    console.log(res);
-  })
+  let promises = [];
+  promises.push(getHistoricalPrices("PLTR"));
+  promises.push(getHistoricalPrices("AAPL"));
+
+  await Promise.all(promises).then((values) => {
+    console.log(values);
+  });
   res.send("DONE fetching latest individual stock price");
 });
 
