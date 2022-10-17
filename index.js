@@ -152,7 +152,7 @@ const getDividendDataForStocks = async (stockSymbol) => {
 
   var config = {
     method: 'get',
-    url: 'https://api.nasdaq.com/api/quote/AAPL/info?assetclass=stocks',
+    url: url,
     headers: {
         'authority': 'api.nasdaq.com',
         'accept': 'application/json, text/plain, */*',
@@ -166,9 +166,9 @@ const getDividendDataForStocks = async (stockSymbol) => {
     }
   };
   await axios(config)
-    .then(response => response.text())
     .then(result => {
-      const resultJson = JSON.parse(result);
+      console.log(result.data);
+      const resultJson = result.data;
       if (resultJson.data != null) {
         const dividendHeaderValues = resultJson.data.dividendHeaderValues;
         // Call the parse header method
@@ -180,6 +180,7 @@ const getDividendDataForStocks = async (stockSymbol) => {
           peRatio: dividendHeaderValues[3].value
         }
   
+        console.log(stockDividendOverview);
         redisClient.set(stockSymbol+"_dividend_overview", JSON.stringify(stockDividendOverview));
   
         // Call the dividend calendar parse method
