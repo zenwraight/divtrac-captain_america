@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express()
 const port = 3000
 const axios = require('axios');
+const request = require('request');
 
 const yahooFinance = require("yahoo-finance2").default;
 
@@ -83,6 +84,62 @@ let fetchedLastStockPrice;
 const fetchLastStockPriceQueue = async () => {
 
 }
+
+const getDividendHistory = async (stockSymbol) => {
+  try {
+    const query = stockSymbol;
+    const queryOptions = { period1: '2021-02-01', /* ... */ };
+    const result = await yahooFinance.historical(query, queryOptions);
+
+    console.log(result);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const baseUrl = 'https://finance.yahoo.com/quote/';
+
+const getHistoricalPrices = function (
+  startMonth,
+  startDay,
+  startYear,
+  endMonth,
+  endDay,
+  endYear,
+  ticker,
+  frequency,
+  callback,
+) {
+  const startDate = Math.floor(Date.UTC(startYear, startMonth, startDay, 0, 0, 0) / 1000);
+  const endDate = Math.floor(Date.UTC(endYear, endMonth, endDay, 0, 0, 0) / 1000);
+
+  const promise = new Promise((resolve, reject) => {
+      request(`${baseUrl + ticker}/history?period1=${startDate}&period2=${endDate}&interval=${frequency}&filter=history&frequency=${frequency}`, (err, res, body) => {
+          if (err) {
+              reject(err);
+              return;
+          }
+
+          try {
+              const prices = JSON.parse(body.split('HistoricalPriceStore\":{\"prices\":')[1].split(',"isPending')[0]);
+
+              resolve(prices);
+          } catch (err) {
+              reject(err);
+          }
+      });
+  });
+
+  // If a callback function was supplied return the result to the callback.
+  // Otherwise return a promise.
+  if (typeof callback === 'function') {
+      promise
+          .then((price) => callback(null, price))
+          .catch((err) => callback(err));
+  } else {
+      return promise;
+  }
+};
 
 // This is to fetch current price of stock delayed by every 60 minutes
 const getLastStockPrice = async (stockSymbol) => {
@@ -486,7 +543,18 @@ app.get('/getLatestStockPrice', async (req, res) => {
 });
 
 app.get('/test', async (req, res) => {
-  await getDividendDataForStocks("AAPL");
+  getHistoricalPrices(
+    1,
+    1,
+    2010,
+    11,
+    30,
+    2022,
+    "AAPL",
+    "1d"
+  ).then((res) => {
+    console.log(res);
+  })
   res.send("DONE fetching latest individual stock price");
 });
 
