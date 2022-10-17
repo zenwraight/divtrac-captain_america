@@ -2,7 +2,7 @@ const https = require('https');
 const express = require("express");
 const cors = require('cors');
 const app = express()
-const port = 3000
+const port = 3100
 const axios = require('axios');
 const request = require('request');
 
@@ -122,9 +122,15 @@ const getHistoricalPrices = function (
           try {
               //const prices = JSON.parse(body.split('HistoricalPriceStore\":{\"prices\":')[1].split(',"isPending')[0]);
               const dividends = JSON.parse(body.split('eventsData\":')[1].split('},\"MobileHeaderStore\":{')[0]);
-              resolve(dividends);
+              resolve(JSON.parse(JSON.stringify({
+                "symbol": ticker,
+                "data": dividends
+              })));
           } catch (err) {
-              resolve([]);
+              resolve(JSON.parse(JSON.stringify({
+                "symbol": ticker,
+                "data": []
+              })));
               //reject(err);
           }
       });
@@ -430,6 +436,7 @@ const fetchDividendDataFromApiForStocks = async () => {
 
   // Stocks summary - https://api.nasdaq.com/api/quote/AAPL/summary?assetclass=stocks
 
+  let promises = [];
   readXlsxFile('Stock.xlsx').then(async (rows) => {
     for(let i=1; i<rows.length-1; i++) {
 
@@ -445,9 +452,16 @@ const fetchDividendDataFromApiForStocks = async () => {
       let symbol = rows[i][0];
       redisClient.set(symbol+"_company_overview", JSON.stringify(companyOverview));
 
-      await getDividendDataForStocks(symbol);
+      await getHistoricalPrices(symbol).then((res) => {
+        console.log(res);
+      });
+      //await getDividendDataForStocks(symbol);
     }
   });
+
+  // await Promise.all(promises).then((values) => {
+  //   console.log(values.length);
+  // });
 }
 
 const fetchDividendDataFromApiForEtfs = async () => {
@@ -535,13 +549,7 @@ app.get('/getLatestStockPrice', async (req, res) => {
 });
 
 app.get('/test', async (req, res) => {
-  let promises = [];
-  promises.push(getHistoricalPrices("PLTR"));
-  promises.push(getHistoricalPrices("AAPL"));
-
-  await Promise.all(promises).then((values) => {
-    console.log(values);
-  });
+  fetchDividendDataFromApiForStocks();
   res.send("DONE fetching latest individual stock price");
 });
 
